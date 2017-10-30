@@ -40,18 +40,29 @@ function new = catwithnan(cellArray, dim)
 % Copyright 2005 Kelly Kearney
 
 ncells = numel(cellArray);
-new = [];
+% new = [];
+
+ist = isa(cellArray{1}, 'datetime');
 
 if dim == 1
     cellArray = cellArray(:);
-    nrows = cellfun('size', cellArray, 1);
-    ncols = cellfun('size', cellArray, 2);
+    if ist
+        nrows = cellfun(@(x) size(x,1), cellArray);
+        ncols = cellfun(@(x) size(x,2), cellArray);
+    else
+        nrows = cellfun('size', cellArray, 1);
+        ncols = cellfun('size', cellArray, 2);
+    end
     ncols = unique(ncols);
     if ~isscalar(ncols)
         error('All arrays in the cell array must have the same number of columns');
     end
     startIndex = 1;
-    new = NaN(sum(nrows) + numel(cellArray), ncols);
+    if ist
+        new = NaT(sum(nrows) + numel(cellArray), ncols);
+    else
+        new = NaN(sum(nrows) + numel(cellArray), ncols);
+    end
     
     for icell = 1:length(cellArray)
         endIndex = startIndex + nrows(icell) - 1;
@@ -60,14 +71,23 @@ if dim == 1
     end
 elseif dim == 2
     cellArray = cellArray(:)';
-    nrows = cellfun('size', cellArray, 1);
-    ncols = cellfun('size', cellArray, 2);
+    if ist
+        nrows = cellfun(@(x) size(x,1), cellArray);
+        ncols = cellfun(@(x) size(x,2), cellArray);
+    else
+        nrows = cellfun('size', cellArray, 1);
+        ncols = cellfun('size', cellArray, 2);
+    end
     nrows = unique(nrows);
     if ~isscalar(nrows)
         error('All arrays in the cell array must have the same number of rows');
     end
     startIndex = 1;
-    new = NaN(nrows, sum(ncols) + numel(cellArray));
+    if ist
+        new = NaT(nrows, sum(ncols) + numel(cellArray));
+    else
+        new = NaN(nrows, sum(ncols) + numel(cellArray));
+    end
     for icell = 1:length(cellArray)
         endIndex = startIndex + ncols(icell) - 1;
         new(:, startIndex:endIndex) = cellArray{icell};
